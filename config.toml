@@ -1,0 +1,16 @@
+app_name = "PaymentPlatform"
+port = "8080"
+env = "production"
+api_key="test"
+
+[db]
+host = "localhost"
+port = "5432"
+user = "user"
+password = "secret"
+DB_NAME="agap"
+sslmode = "disable"
+DB_CONNECTSTRING="mongodb://root:example@mongo:27017/agap?authSource=admin"
+
+[eventstore]
+EVENTSTORE_DB_CONNECTION_STRING="esdb://eventstore:2113?tls=false"

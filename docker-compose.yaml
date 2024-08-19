@@ -1,0 +1,79 @@
+services:
+  app:
+    image: agapp:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - EVENTSTORE_DB_CONNECTION_STRING=esdb://eventstore:2113?tls=false
+      - MONGO_DB_CONNECTION_STRING=mongodb://mongo:27017
+      - MONGO_DB_NAME=agap
+    depends_on:
+      - eventstore
+      - mongo
+    networks:
+      - app-network
+
+  eventstore:
+    image: eventstore/eventstore:21.10.2-buster-slim
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_HTTP_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+      - EVENTSTORE_LOG_LEVEL=Verbose
+    ports:
+      - "2113:2113"
+      - "1113:1113"
+    networks:
+      - app-network
+    volumes:
+      - eventstore-data:/var/lib/eventstore
+
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=agap
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+      - ME_CONFIG_MONGODB_SERVER=mongo
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  bank:
+    build:
+      context: .
+      dockerfile: bank.Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  eventstore-data:
+  mongo-data:

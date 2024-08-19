@@ -1,0 +1,51 @@
+[[payment_providers]]
+name = "stripe"
+type = "rest"
+base_url = ""
+auth_header = "Authorization"
+auth_token = "Bearer"
+currency = "usd"
+endpoints = [
+    { action = "authorize", method = "POST", path = "/payment_intents", params = { "amount" = "{{amount}}", "currency" = "{{currency}}", "payment_method" = "{{card_number}}" } },
+    { action = "capture", method = "POST", path = "/payment_intents/{{transaction_id}}/capture", params = {} },
+    { action = "refund", method = "POST", path = "/refunds", params = { "payment_intent" = "{{transaction_id}}", "amount" = "{{amount}}" } }
+]
+
+[[payment_providers]]
+name = "paypal"
+type = "rest"
+base_url = ""
+auth_header = ""
+auth_token = ""
+currency = "USD"
+endpoints = [
+    { action = "authorize", method = "POST", path = "/payments/payment", params = { "intent" = "authorize", "payer" = "{{payer_info}}", "transactions" = "[{\"amount\": {\"total\": \"{{amount}}\", \"currency\": \"{{currency}}\"}}]" } },
+    { action = "capture", method = "POST", path = "/payments/authorization/{{transaction_id}}/capture", params = { "amount" = "{\"currency\":\"{{currency}}\",\"total\":\"{{amount}}\"}" } },
+    { action = "refund", method = "POST", path = "/payments/sale/{{transaction_id}}/refund", params = { "amount" = "{\"total\":\"{{amount}}\",\"currency\":\"{{currency}}\"}" } }
+]
+
+[[payment_providers]]
+name = "braintree"
+type = "graphql"
+base_url = ""
+auth_header = "Authorization"
+auth_token = ""
+currency = "USD"
+endpoints = [
+    { action = "authorize", method = "POST", path = "/", params = { "query" = "mutation { createTransaction(input: { amount: \"{{amount}}\", paymentMethodId: \"{{card_number}}\" }) { transaction { id } } }" } },
+    { action = "capture", method = "POST", path = "/", params = { "query" = "mutation { captureTransaction(input: { transactionId: \"{{transaction_id}}\", amount: \"{{amount}}\" }) { transaction { id } } }" } },
+    { action = "refund", method = "POST", path = "/", params = { "query" = "mutation { refundTransaction(input: { transactionId: \"{{transaction_id}}\", amount: \"{{amount}}\" }) { transaction { id } } }" } }
+]
+
+[[payment_providers]]
+name = "testBank"
+type = "rest"
+base_url = "http://bank:5000"
+auth_header = "Authorization"
+auth_token = ""
+currency = "USD"
+endpoints = [
+    { action = "authorize", method = "POST", path = "/pay", params = { "amount" = "{{amount}}", "card_number" = "{{card_number}}", "expiry_date" = "{{expiry_date}}", "cvv" = "{{cvv}}" } },
+    { action = "capture", method = "POST", path = "/capture", params = { "transaction_id" = "{{transaction_id}}", "amount" = "{{amount}}" } },
+    { action = "refund", method = "POST", path = "/refund", params = { "transaction_id" = "{{transaction_id}}", "amount" = "{{amount}}" } }
+]

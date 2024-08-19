@@ -1,0 +1,458 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is an agnostic payment platform API that processes and retrieves payment details.",
+        "title": "Agnostic Payment Platform API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "paths": {
+        "/merchant/login": {
+            "post": {
+                "description": "Login a merchant with an email and password.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchants"
+                ],
+                "summary": "Login as a merchant",
+                "parameters": [
+                    {
+                        "description": "Login request",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/merchant/signup": {
+            "post": {
+                "description": "Register a new merchant with an email, password, and name.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchants"
+                ],
+                "summary": "Register a new merchant",
+                "parameters": [
+                    {
+                        "description": "Signup request",
+                        "name": "signup",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments": {
+            "post": {
+                "description": "Processes a payment based on the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Process a payment",
+                "parameters": [
+                    {
+                        "description": "Payment Request",
+                        "name": "payment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to process payment",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/refund": {
+            "post": {
+                "description": "Handles the refund request by extracting refund details from the request body and processing the refund.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Process a refund request",
+                "parameters": [
+                    {
+                        "description": "Refund details",
+                        "name": "refundDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.RefundDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Refund processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to process payment",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}": {
+            "get": {
+                "description": "Retrieves details of a payment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Get payment details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing payment ID",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    },
+                    "404": {
+                        "description": "Payment not found",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve payment details",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 12.45
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "uuid123421"
+                },
+                "merchant_id": {
+                    "type": "string",
+                    "example": "uuidasfhtu12"
+                },
+                "payment_status": {
+                    "type": "string"
+                },
+                "refunded_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "card_number",
+                "currency",
+                "cvv",
+                "expiry_date",
+                "merchant_id",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "card_number": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "cvv": {
+                    "type": "string"
+                },
+                "expiry_date": {
+                    "type": "string"
+                },
+                "merchant_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO": {
+            "type": "object",
+            "required": [
+                "transaction_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "payment_id": {
+                    "type": "string"
+                },
+                "payment_status": {
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "agnostic-payment-platform_internal_application_payment_dto.RefundDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "payment_id",
+                "transaction_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "payment_id": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "gin.H": {
+            "type": "object",
+            "additionalProperties": {}
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "To access protected routes, add the x-api-key header with your API key. Example: \"x-api-key: your-api-key\"",
+            "type": "apiKey",
+            "name": "x-api-key",
+            "in": "header"
+        }
+    },
+    "security": [
+        {
+            "ApiKeyAuth": []
+        }
+    ]
+}
