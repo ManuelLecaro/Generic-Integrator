@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	swaggerFiles "github.com/swaggo/files"
 )
@@ -26,6 +27,7 @@ type HealthOutput struct {
 }
 
 func (hr *GeneralRouter) Load() {
+	hr.engine.Use(otelgin.Middleware("generic-integration"))
 	hr.engine.GET("/health", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})

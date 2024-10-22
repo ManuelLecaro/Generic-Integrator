@@ -1,0 +1,126 @@
+# Complete integration with multiple providers and different types of communication (REST, gRPC, etc.)
+
+# Definition of the payment service provider
+[[integrations]]
+name = "example_service"
+type = "rest"  # Integration type: can be "rest", "grpc", etc.
+base_url = "https://api.example.com/v1"
+auth_type = "token"  # Possible types: "basic", "token", "oauth"
+auth_header = "Authorization"
+auth_token = "Bearer TEST_TOKEN"  # Authentication token (can be a template or dynamic value)
+
+# OAuth authentication configuration if needed
+[integrations.oauth]
+client_id = "your_client_id"
+client_secret = "your_client_secret"
+token_url = "https://auth.example.com/oauth/token"
+
+# Definition of the provider's available endpoints
+[[integrations.endpoints]]
+action = "authorize"
+method = "POST"
+path = "/payment_intents"
+description = "Authorize a payment"
+# Mapping of the request body parameters (dynamic, based on input variables)
+[integrations.endpoints.params]
+amount = "{{input.amount}}"
+currency = "{{input.currency}}"
+payment_method = "{{input.card_number}}"
+
+# Definition of headers specific to this endpoint
+[integrations.endpoints.headers]
+Authorization = "{{auth_token}}"
+Content-Type = "application/json"
+
+# Mapping the response received after processing
+[integrations.endpoints.response_mappings]
+transaction_id = "{{response.transaction_id}}"
+status = "{{response.status}}"
+
+[[integrations.endpoints]]
+action = "capture"
+method = "POST"
+path = "/payment_intents/{{transaction_id}}/capture"
+description = "Capture a payment"
+# No additional parameters in this case
+[integrations.endpoints.params]
+empty = true
+
+[integrations.endpoints.response_mappings]
+capture_status = "{{response.status}}"
+
+[[integrations.endpoints]]
+action = "refund"
+method = "POST"
+path = "/refunds"
+description = "Refund a payment"
+[integrations.endpoints.params]
+payment_intent = "{{input.transaction_id}}"
+amount = "{{input.amount}}"
+
+[integrations.endpoints.response_mappings]
+refund_id = "{{response.refund_id}}"
+refund_status = "{{response.status}}"
+
+# Additional configuration to handle other integration types like gRPC
+[[integrations]]
+name = "example_grpc_service"
+type = "grpc"
+service_name = "PaymentService"
+auth_type = "token"
+auth_token = "Bearer TEST_TOKEN"
+
+[[integrations.endpoints]]
+action = "capture"
+method = "CapturePayment"  # gRPC method
+description = "Capture a payment via gRPC"
+[integrations.endpoints.params]
+transaction_id = "{{input.transaction_id}}"
+amount = "{{input.amount}}"
+
+[integrations.endpoints.response_mappings]
+capture_status = "{{response.status}}"
+
+# General configuration of the integration flows, connecting endpoints sequentially
+[[flows]]
+name = "payment_flow"
+description = "Complete payment flow: authorization, capture, and refund"
+
+[[flows.steps]]
+name = "authorize_step"
+integration = "example_service"
+action = "authorize"
+description = "Authorize the payment"
+retry_policy = { retries = 3, delay_seconds = 2 }
+[flows.steps.inputs]
+amount = "{{input.amount}}"
+currency = "{{input.currency}}"
+payment_method = "{{input.card_number}}"
+
+[flows.steps.outputs]
+transaction_id = "{{response.transaction_id}}"
+status = "{{response.status}}"
+
+[[flows.steps]]
+name = "capture_step"
+integration = "example_grpc_service"
+action = "capture"
+description = "Capture the authorized payment"
+[flows.steps.inputs]
+transaction_id = "{{previous_step.transaction_id}}"
+amount = "{{input.amount}}"
+
+[flows.steps.outputs]
+capture_status = "{{response.capture_status}}"
+
+[[flows.steps]]
+name = "refund_step"
+integration = "example_service"
+action = "refund"
+description = "Refund the captured payment"
+[flows.steps.inputs]
+transaction_id = "{{previous_step.transaction_id}}"
+amount = "{{input.refund_amount}}"
+
+[flows.steps.outputs]
+refund_status = "{{response.refund_status}}"

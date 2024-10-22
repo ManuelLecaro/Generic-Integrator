@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"agnostic-payment-platform/internal/infra/config"
+	"generic-integration-platform/internal/infra/config"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
