@@ -1,18 +1,16 @@
-# Agnostic Payment Platform
+# Generic Integrator Platform
 
 ## Overview
 
-The **Agnostic Payment Platform** is a flexible and extensible payment integration framework designed to work with multiple payment providers without requiring code changes for each new integration. 
-
-This platform enables merchants to process payments and manage transactions with various payment gateways simply by updating configuration files, eliminating the need for hardcoded logic for each provider.
+The **Generic Integrator Platform** is a powerful and flexible integration framework that enables seamless connectivity with multiple external service providers. Designed for businesses seeking to streamline their payment processing and third-party service integrations, this platform eliminates the need for cumbersome code changes for each new integration. By leveraging simple configuration files, organizations can efficiently manage interactions with various payment gateways and APIs, enhancing operational efficiency and reducing development time.
 
 
 ## Features
 
-- **Multi-provider Support**: Easily integrate with numerous payment gateways only with a configuration file.
-- **Configurable Integration**: All integration details are handled via configuration files, reducing the need for code changes.
-- **Scalable and Extensible**: Designed to scale as new payment methods are required, without requiring developer intervention.
-- **Secure Handling**: Sensitive data such as API tokens and authentication details are managed securely within configurations.
+- **Multi-Provider Integration**: Effortlessly connect with a wide range of payment gateways and external services using a single configuration file, simplifying the integration process.
+- **Dynamic Configurable Integration**: Manage all integration details through easy-to-update configuration files, minimizing the need for extensive code modifications and allowing for rapid adjustments.
+- **Scalable and Extensible Architecture**: Built to accommodate the evolving needs of businesses, the platform supports the addition of new payment methods and integrations without requiring developer intervention, promoting scalability.
+- **Secure Data Management**: Ensure the secure handling of sensitive information such as API tokens and authentication credentials, with configurations designed to protect your data.
 
 ## Installation
 
@@ -40,40 +38,41 @@ The platform uses a configuration file (payments.toml) to define how to interact
 
 ```toml
 
-[[payment_providers]]
+[[integrations]]
 name = "example_service"
-type = "rest"
+type = "rest"  # Integration type: can be "rest", "grpc", etc.
 base_url = "https://api.example.com/v1"
+auth_type = "token"  # Possible types: "basic", "token", "oauth"
 auth_header = "Authorization"
-auth_token = "Bearer TEST_TOKEN"
-currency = "usd"
-endpoints = [
-    { action = "authorize", method = "POST", path = "/payment_intents", params = { "amount" = "{{amount}}", "currency" = "{{currency}}", "payment_method" = "{{card_number}}" } },
-    { action = "capture", method = "POST", path = "/payment_intents/{{transaction_id}}/capture", params = {} },
-    { action = "refund", method = "POST", path = "/refunds", params = { "payment_intent" = "{{transaction_id}}", "amount" = "{{amount}}" } }
-]
+auth_token = "Bearer TEST_TOKEN"  # Authentication token (can be a template or dynamic value)
 
-```
+# OAuth authentication configuration if needed
+[integrations.oauth]
+client_id = "your_client_id"
+client_secret = "your_client_secret"
+token_url = "https://auth.example.com/oauth/token"
 
-## Testing
+# Definition of the provider's available endpoints
+[[integrations.endpoints]]
+action = "authorize"
+method = "POST"
+path = "/payment_intents"
+description = "Authorize a payment"
+# Mapping of the request body parameters (dynamic, based on input variables)
+[integrations.endpoints.params]
+amount = "{{input.amount}}"
+currency = "{{input.currency}}"
+payment_method = "{{input.card_number}}"
 
-The configuration to simulate the payment is on bankTest, if you want to test a payment you can use bankTest integration.
-```bash
+# Definition of headers specific to this endpoint
+[integrations.endpoints.headers]
+Authorization = "{{auth_token}}"
+Content-Type = "application/json"
 
-curl -X 'POST' \
-  'http://localhost:8080/payments' \
-  -H 'accept: application/json' \
-  -H 'x-api-key: test' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "amount": 10,
-  "card_number": "1234533",
-  "currency": "usd",
-  "cvv": "1234",
-  "expiry_date": "1223",
-  "merchant_id": "1",
-  "type": "testBank"
-}'
+# Mapping the response received after processing
+[integrations.endpoints.response_mappings]
+transaction_id = "{{response.transaction_id}}"
+status = "{{response.status}}"
 
 ```
 
@@ -91,20 +90,16 @@ from a payment transaction and also are able to plug more functionalities into t
 
 ## Pros and Cons of Generic vs. Custom Integration Approaches
 
-| **Aspect**               | **Generic Approach (Configuration-Based)**                            | **Custom-Coded Approach**                                          |
-|--------------------------|-----------------------------------------------------------------------|--------------------------------------------------------------------|
-| **Flexibility**           | **Pro:** High flexibility; add new providers without code changes.    | **Con:** Less flexible; new providers require new code.            |
-| **Maintenance**           | **Con:** Configurations can become complex and difficult to maintain. | **Pro:** Easier to maintain as each integration is isolated.       |
-| **Initial Complexity**    | **Con:** Higher initial complexity to design a generic system.        | **Pro:** Lower initial complexity; can start with simple code.     |
-| **Scalability**           | **Pro:** Scales well with new providers without code changes.         | **Con:** Less scalable; each new provider needs additional code.   |
-| **Flow Control**          | **Con:** Less control over provider-specific logic.                   | **Pro:** Maximum control over the integration logic.               |
-| **Performance**           | **Con:** Possible overhead from dynamic configuration processing.     | **Pro:** Potentially better performance with optimized code.       |
-| **Security**              | **Con:** Managing sensitive data in configurations can be risky.      | **Pro:** Better security control in custom code.                   |
-| **Updates and Changes**   | **Pro:** API changes can often be handled with configuration updates. | **Con:** API changes require code updates.                         |
-| **Debugging and Testing** | **Con:** Harder to debug and test due to the generic nature.          | **Pro:** Easier to debug and test; each integration is specific.   |
-| **Reusability**           | **Pro:** Can be reused across multiple providers without changes.     | **Con:** Less reusable; each provider requires specific logic.     |
-| **Development Cost**      | **Con:** Potentially higher development cost upfront.                 | **Pro:** Lower initial development cost for fewer integrations.    |
-| **Extensibility**         | **Pro:** Easily extensible by adding new configurations.              | **Con:** Requires code extension for new integrations.             |
+| **Aspect**               | **Generic Integration (Config-Based)**                           | **Custom Integration (Code-Based)**                                |
+|--------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------|
+| **Flexibility**           | **Pro:** High flexibility; add providers via configs without code changes. | **Con:** Less flexible; requires new code for each provider.      |
+| **Maintenance**           | **Con:** Configs can become complex.                            | **Pro:** Easier to maintain, each integration is isolated.         |
+| **Scalability**           | **Pro:** Scales well; add new providers via configuration.       | **Con:** Requires additional code for each new provider.           |
+| **Performance**           | **Con:** Possible overhead from dynamic configs.                | **Pro:** Optimized performance for specific providers.             |
+| **Security**              | **Con:** Managing sensitive data in configs can be risky.       | **Pro:** Better security with custom code.                         |
+| **Updates & Changes**     | **Pro:** API changes handled with config updates.               | **Con:** Requires code updates for API changes.                    |
+| **Development Cost**      | **Con:** Higher initial cost for generic system design.         | **Pro:** Lower initial cost for fewer providers.                   |
+| **Extensibility**         | **Pro:** Easily extendable by adding configs.                   | **Con:** Requires new code for each additional provider.           |
 
 
 # Future work
@@ -117,3 +112,14 @@ from a payment transaction and also are able to plug more functionalities into t
 3. Setup pipelines for CI/CD
 4. Set up linting
 5. Set up a message bus to integrate with systems that does not need synchronous communication.
+
+To further enhance the **Generic Integrator Platform**, the following features and improvements are planned:
+
+- [ ] **Add Support for gRPC**: Implement gRPC support for improved performance and flexibility in communication between services.
+- [ ] **Integrate SOAP Protocol**: Provide support for the SOAP protocol to connect with legacy systems and services.
+- [ ] **Implement GraphQL Support**: Enable GraphQL integration for more efficient data querying and manipulation.
+- [ ] **Define Integration Extension Format**: Establish a standardized format for extending integrations, making it easier to add new providers and functionalities.
+- [ ] **Develop a User Interface**: Create a user-friendly graphical interface to simplify configuration management and improve the overall user experience.
+- [ ] **Enhance Testing Suite**: Add integration testing and increase unit test coverage for better reliability and maintainability.
+- [ ] **Establish Linting and Code Quality Checks**: Integrate linting tools to maintain code quality and consistency throughout the codebase.
+- [ ] **Implement a Message Bus**: Introduce a message bus system to facilitate asynchronous communication between services and improve scalability.
