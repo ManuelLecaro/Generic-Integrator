@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"agnostic-payment-platform/internal/infra/http/handler"
+	"generic-integration-platform/internal/infra/http/handler"
 
 	"go.uber.org/fx"
 )
@@ -14,16 +14,12 @@ type Route interface {
 
 type NewRoutesParams struct {
 	fx.In
-	HealthRouter  *GeneralRouter
-	PaymentRouter *PaymentRouter
-	Merchantouter *Merchantouter
+	HealthRouter *GeneralRouter
 }
 
 func NewRoutes(rp NewRoutesParams) Routes {
 	return Routes{
 		rp.HealthRouter,
-		rp.PaymentRouter,
-		rp.Merchantouter,
 	}
 }
 
@@ -38,7 +34,5 @@ var Module = fx.Options(
 	fx.Provide(
 		NewRoutes,
 		NewHealthRouter,
-		NewPaymentRouter,
-		NewMerchantouter,
 	),
 )

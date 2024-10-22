@@ -1,9 +1,9 @@
 package http
 
 import (
-	"agnostic-payment-platform/internal/infra/config"
 	"context"
 	"fmt"
+	"generic-integration-platform/internal/infra/config"
 	"net/http"
 	"time"
 

@@ -1,26 +1,23 @@
 package main
 
 import (
-	"agnostic-payment-platform/internal/application/integration"
-	"agnostic-payment-platform/internal/application/merchant"
-	"agnostic-payment-platform/internal/application/payment"
-	"agnostic-payment-platform/internal/infra/config"
-	"agnostic-payment-platform/internal/infra/db"
-	"agnostic-payment-platform/internal/infra/eventstore"
-	"agnostic-payment-platform/internal/infra/http"
-	"agnostic-payment-platform/internal/infra/http/routes"
-	"fmt"
+	"generic-integration-platform/internal/infra/config"
+	"generic-integration-platform/internal/infra/db"
+	"generic-integration-platform/internal/infra/eventstore"
+	"generic-integration-platform/internal/infra/http"
+	"generic-integration-platform/internal/infra/http/routes"
+	"generic-integration-platform/internal/infra/monitoring"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 
-	_ "agnostic-payment-platform/docs"
+	_ "generic-integration-platform/docs"
 )
 
-// @title Agnostic Payment Platform API
+// @title Generic Integration Platform API
 // @version 1.0
-// @description This is an agnostic payment platform API that processes and retrieves payment details.
+// @description This is an Generic Integration Platform API that processes multiple integration and integration flows.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
@@ -44,24 +41,18 @@ func main() {
 		log.Fatal("Failed to load config")
 	}
 
-	fmt.Println("DATA : : ", cfg)
-
 	iCfg, err := config.LoadIntegrationConfig("payments.toml")
 	if err != nil {
 		log.Fatal("Failed to load config")
 	}
 
-	fmt.Println("DATA : : ", iCfg)
-
 	fx.New(
 		fx.Provide(func() (*config.Config, *config.IntegrationConfig) {
 			return cfg, iCfg
 		}),
+		monitoring.Module,
 		http.Module,
 		routes.Module,
-		payment.Module,
-		merchant.Module,
-		integration.Module,
 		eventstore.Module,
 		db.Module,
 		fx.Invoke(

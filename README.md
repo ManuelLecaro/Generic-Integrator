@@ -18,8 +18,8 @@ This platform enables merchants to process payments and manage transactions with
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ManuelLecaro/agnostic-payment-platform.git
-   cd agnostic-payment-platform
+   git clone https://github.com/ManuelLecaro/generic-integration-platform.git
+   cd generic-integration-platform
    ```
 
 2. Install docker and docker-compose

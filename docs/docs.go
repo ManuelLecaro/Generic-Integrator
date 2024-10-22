@@ -24,61 +24,36 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/merchant/login": {
-            "post": {
-                "description": "Login a merchant with an email and password.",
-                "consumes": [
-                    "application/json"
-                ],
+        "/flows": {
+            "get": {
+                "description": "Retrieve a list of all flows",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Merchants"
+                    "Flows"
                 ],
-                "summary": "Login as a merchant",
-                "parameters": [
-                    {
-                        "description": "Login request",
-                        "name": "login",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO"
-                        }
-                    }
-                ],
+                "summary": "Get all flows",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
                         }
                     }
                 }
-            }
-        },
-        "/merchant/signup": {
+            },
             "post": {
-                "description": "Register a new merchant with an email, password, and name.",
+                "description": "Create a new flow by providing flow details",
                 "consumes": [
                     "application/json"
                 ],
@@ -86,17 +61,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Merchants"
+                    "Flows"
                 ],
-                "summary": "Register a new merchant",
+                "summary": "Create a new flow",
                 "parameters": [
                     {
-                        "description": "Signup request",
-                        "name": "signup",
+                        "description": "Flow Data",
+                        "name": "flow",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO"
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
                         }
                     }
                 ],
@@ -104,133 +79,38 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO"
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO"
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
                         }
                     }
                 }
             }
         },
-        "/payments": {
-            "post": {
-                "description": "Processes a payment based on the provided details",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "payments"
-                ],
-                "summary": "Process a payment",
-                "parameters": [
-                    {
-                        "description": "Payment Request",
-                        "name": "payment",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/gin.H"
-                        }
-                    },
-                    "500": {
-                        "description": "Unable to process payment",
-                        "schema": {
-                            "$ref": "#/definitions/gin.H"
-                        }
-                    }
-                }
-            }
-        },
-        "/payments/refund": {
-            "post": {
-                "description": "Handles the refund request by extracting refund details from the request body and processing the refund.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "payments"
-                ],
-                "summary": "Process a refund request",
-                "parameters": [
-                    {
-                        "description": "Refund details",
-                        "name": "refundDTO",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.RefundDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Refund processed successfully",
-                        "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/gin.H"
-                        }
-                    },
-                    "500": {
-                        "description": "Unable to process payment",
-                        "schema": {
-                            "$ref": "#/definitions/gin.H"
-                        }
-                    }
-                }
-            }
-        },
-        "/payments/{id}": {
+        "/flows/{id}": {
             "get": {
-                "description": "Retrieves details of a payment by its ID",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retrieve details of a specific flow by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "payments"
+                    "Flows"
                 ],
-                "summary": "Get payment details",
+                "summary": "Get flow details by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Payment ID",
+                        "description": "Flow ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -240,25 +120,360 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Missing payment ID",
-                        "schema": {
-                            "$ref": "#/definitions/gin.H"
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
                         }
                     },
                     "404": {
-                        "description": "Payment not found",
+                        "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/gin.H"
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
                         }
                     },
                     "500": {
-                        "description": "Unable to retrieve payment details",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/gin.H"
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing flow by providing its ID and updated details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Flows"
+                ],
+                "summary": "Update a flow",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flow ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Flow Data",
+                        "name": "flow",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a specific flow by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Flows"
+                ],
+                "summary": "Delete a flow by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flow ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/flows/{id}/execute": {
+            "post": {
+                "description": "Execute a specific flow by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Flows"
+                ],
+                "summary": "Execute a flow by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flow ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.FlowDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/integrations": {
+            "get": {
+                "description": "Get a list of all integrations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "List all integrations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new integration with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Create a new integration",
+                "parameters": [
+                    {
+                        "description": "Integration data",
+                        "name": "integration",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/integrations/{id}": {
+            "get": {
+                "description": "Retrieve details of a specific integration by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Get a specific integration by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Integration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the details of an existing integration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Update an existing integration by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Integration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated integration data",
+                        "name": "integration",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a specific integration by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Delete an integration by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Integration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO"
                         }
                     }
                 }
@@ -266,187 +481,176 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO": {
+        "generic-integration-platform_internal_application_dto.EndpointRequestDTO": {
             "type": "object",
             "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO": {
-            "type": "object",
-            "required": [
-                "email",
+                "method",
                 "name",
-                "password"
+                "path"
             ],
             "properties": {
-                "email": {
+                "headers": {
+                    "description": "Additional headers (optional)",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "HTTP method (e.g., GET, POST)",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Name of the endpoint",
                     "type": "string"
                 },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
+                "path": {
+                    "description": "Path of the endpoint",
                     "type": "string"
                 }
             }
         },
-        "agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO": {
+        "generic-integration-platform_internal_application_dto.EndpointResponseDTO": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "type": "number",
-                    "example": 12.45
-                },
-                "created_at": {
+                "method": {
+                    "description": "HTTP method (e.g., GET, POST)",
                     "type": "string"
                 },
-                "currency": {
-                    "type": "string",
-                    "example": "USD"
+                "name": {
+                    "description": "Name of the endpoint",
+                    "type": "string"
                 },
+                "path": {
+                    "description": "Path of the endpoint",
+                    "type": "string"
+                }
+            }
+        },
+        "generic-integration-platform_internal_application_dto.FlowDTO": {
+            "type": "object",
+            "properties": {
                 "id": {
-                    "type": "string",
-                    "example": "uuid123421"
-                },
-                "merchant_id": {
-                    "type": "string",
-                    "example": "uuidasfhtu12"
-                },
-                "payment_status": {
+                    "description": "Unique identifier for the flow",
                     "type": "string"
                 },
-                "refunded_amount": {
-                    "type": "number"
+                "name": {
+                    "description": "Name of the flow",
+                    "type": "string"
+                },
+                "steps": {
+                    "description": "List of steps in the flow",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/generic-integration-platform_internal_application_dto.StepDTO"
+                    }
                 }
             }
         },
-        "agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO": {
+        "generic-integration-platform_internal_application_dto.IntegrationRequestDTO": {
             "type": "object",
             "required": [
-                "amount",
-                "card_number",
+                "base_url",
                 "currency",
-                "cvv",
-                "expiry_date",
-                "merchant_id",
+                "endpoints",
+                "name",
                 "type"
             ],
             "properties": {
-                "amount": {
-                    "type": "number"
+                "auth_token": {
+                    "description": "The authentication token (optional)",
+                    "type": "string"
                 },
-                "card_number": {
+                "auth_type": {
+                    "description": "Type of authentication (e.g., Bearer, Basic)",
+                    "type": "string"
+                },
+                "base_url": {
+                    "description": "Base URL for API requests",
                     "type": "string"
                 },
                 "currency": {
+                    "description": "Currency for transactions",
                     "type": "string"
                 },
-                "cvv": {
-                    "type": "string"
+                "endpoints": {
+                    "description": "List of endpoints associated with this integration",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/generic-integration-platform_internal_application_dto.EndpointRequestDTO"
+                    }
                 },
-                "expiry_date": {
-                    "type": "string"
-                },
-                "merchant_id": {
+                "name": {
+                    "description": "Name of the integration",
                     "type": "string"
                 },
                 "type": {
+                    "description": "Type of integration (e.g., REST, gRPC)",
                     "type": "string"
                 }
             }
         },
-        "agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO": {
+        "generic-integration-platform_internal_application_dto.IntegrationResponseDTO": {
             "type": "object",
-            "required": [
-                "transaction_id"
-            ],
             "properties": {
-                "amount": {
-                    "type": "number"
+                "auth_type": {
+                    "description": "Type of authentication (e.g., Bearer, Basic)",
+                    "type": "string"
+                },
+                "base_url": {
+                    "description": "Base URL for API requests",
+                    "type": "string"
                 },
                 "currency": {
+                    "description": "Currency for transactions",
                     "type": "string"
                 },
-                "message": {
+                "endpoints": {
+                    "description": "List of endpoints associated with this integration",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/generic-integration-platform_internal_application_dto.EndpointResponseDTO"
+                    }
+                },
+                "id": {
+                    "description": "Unique identifier for the integration",
                     "type": "string"
                 },
-                "payment_id": {
+                "name": {
+                    "description": "Name of the integration",
                     "type": "string"
                 },
-                "payment_status": {
-                    "type": "string"
-                },
-                "transaction_id": {
+                "type": {
+                    "description": "Type of integration (e.g., REST, gRPC)",
                     "type": "string"
                 }
             }
         },
-        "agnostic-payment-platform_internal_application_payment_dto.RefundDTO": {
+        "generic-integration-platform_internal_application_dto.StepDTO": {
             "type": "object",
-            "required": [
-                "amount",
-                "payment_id",
-                "transaction_id"
-            ],
             "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "payment_id": {
+                "action": {
+                    "description": "Action to be performed in the step",
                     "type": "string"
                 },
-                "reason": {
+                "integration_id": {
+                    "description": "ID of the associated integration",
                     "type": "string"
                 },
-                "transaction_id": {
-                    "type": "string"
+                "params": {
+                    "description": "Parameters for the step",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },
-        "gin.H": {
+        "generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO": {
             "type": "object",
-            "additionalProperties": {}
+            "properties": {
+                "message": {
+                    "description": "Error message to describe the issue",
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -470,8 +674,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Agnostic Payment Platform API",
-	Description:      "This is an agnostic payment platform API that processes and retrieves payment details.",
+	Title:            "Generic Integration Platform API",
+	Description:      "This is an Generic Integration Platform API that processes multiple integration and integration flows.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

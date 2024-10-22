@@ -1,7 +1,7 @@
 package eventstore
 
 import (
-	"agnostic-payment-platform/internal/infra/config"
+	"generic-integration-platform/internal/infra/config"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"go.uber.org/fx"
@@ -31,6 +31,7 @@ func NewEventStoreClient(config *config.Config) *EventStore {
 var Module = fx.Option(
 	fx.Provide(
 		NewEventStoreClient,
-		NewPaymentEventStore,
+		NewFlowEventStore,
+		NewIntegrationEventStore,
 	),
 )

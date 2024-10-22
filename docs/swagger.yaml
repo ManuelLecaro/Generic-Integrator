@@ -1,127 +1,126 @@
 definitions:
-  agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO:
+  generic-integration-platform_internal_application_dto.EndpointRequestDTO:
     properties:
-      message:
+      headers:
+        description: Additional headers (optional)
         type: string
-    type: object
-  agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO:
-    properties:
-      email:
-        type: string
-      id:
+      method:
+        description: HTTP method (e.g., GET, POST)
         type: string
       name:
+        description: Name of the endpoint
         type: string
-    type: object
-  agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        minLength: 6
+      path:
+        description: Path of the endpoint
         type: string
     required:
-    - email
+    - method
     - name
-    - password
+    - path
     type: object
-  agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO:
+  generic-integration-platform_internal_application_dto.EndpointResponseDTO:
     properties:
-      message:
+      method:
+        description: HTTP method (e.g., GET, POST)
+        type: string
+      name:
+        description: Name of the endpoint
+        type: string
+      path:
+        description: Path of the endpoint
         type: string
     type: object
-  agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO:
+  generic-integration-platform_internal_application_dto.FlowDTO:
     properties:
-      amount:
-        example: 12.45
-        type: number
-      created_at:
-        type: string
-      currency:
-        example: USD
-        type: string
       id:
-        example: uuid123421
+        description: Unique identifier for the flow
         type: string
-      merchant_id:
-        example: uuidasfhtu12
+      name:
+        description: Name of the flow
         type: string
-      payment_status:
-        type: string
-      refunded_amount:
-        type: number
+      steps:
+        description: List of steps in the flow
+        items:
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.StepDTO'
+        type: array
     type: object
-  agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO:
+  generic-integration-platform_internal_application_dto.IntegrationRequestDTO:
     properties:
-      amount:
-        type: number
-      card_number:
+      auth_token:
+        description: The authentication token (optional)
+        type: string
+      auth_type:
+        description: Type of authentication (e.g., Bearer, Basic)
+        type: string
+      base_url:
+        description: Base URL for API requests
         type: string
       currency:
+        description: Currency for transactions
         type: string
-      cvv:
-        type: string
-      expiry_date:
-        type: string
-      merchant_id:
+      endpoints:
+        description: List of endpoints associated with this integration
+        items:
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.EndpointRequestDTO'
+        type: array
+      name:
+        description: Name of the integration
         type: string
       type:
+        description: Type of integration (e.g., REST, gRPC)
         type: string
     required:
-    - amount
-    - card_number
+    - base_url
     - currency
-    - cvv
-    - expiry_date
-    - merchant_id
+    - endpoints
+    - name
     - type
     type: object
-  agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO:
+  generic-integration-platform_internal_application_dto.IntegrationResponseDTO:
     properties:
-      amount:
-        type: number
+      auth_type:
+        description: Type of authentication (e.g., Bearer, Basic)
+        type: string
+      base_url:
+        description: Base URL for API requests
+        type: string
       currency:
+        description: Currency for transactions
         type: string
-      message:
+      endpoints:
+        description: List of endpoints associated with this integration
+        items:
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.EndpointResponseDTO'
+        type: array
+      id:
+        description: Unique identifier for the integration
         type: string
-      payment_id:
+      name:
+        description: Name of the integration
         type: string
-      payment_status:
+      type:
+        description: Type of integration (e.g., REST, gRPC)
         type: string
-      transaction_id:
-        type: string
-    required:
-    - transaction_id
     type: object
-  agnostic-payment-platform_internal_application_payment_dto.RefundDTO:
+  generic-integration-platform_internal_application_dto.StepDTO:
     properties:
-      amount:
-        type: number
-      payment_id:
+      action:
+        description: Action to be performed in the step
         type: string
-      reason:
+      integration_id:
+        description: ID of the associated integration
         type: string
-      transaction_id:
-        type: string
-    required:
-    - amount
-    - payment_id
-    - transaction_id
+      params:
+        additionalProperties:
+          type: string
+        description: Parameters for the step
+        type: object
     type: object
-  gin.H:
-    additionalProperties: {}
+  generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO:
+    properties:
+      message:
+        description: Error message to describe the issue
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -129,116 +128,92 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: This is an agnostic payment platform API that processes and retrieves
-    payment details.
+  description: This is an Generic Integration Platform API that processes multiple
+    integration and integration flows.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Agnostic Payment Platform API
+  title: Generic Integration Platform API
   version: "1.0"
 paths:
-  /merchant/login:
-    post:
-      consumes:
-      - application/json
-      description: Login a merchant with an email and password.
-      parameters:
-      - description: Login request
-        in: body
-        name: login
-        required: true
-        schema:
-          $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginRequestDTO'
+  /flows:
+    get:
+      description: Retrieve a list of all flows
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.LoginResponseDTO'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO'
+            items:
+              $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
+            type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO'
-      summary: Login as a merchant
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Get all flows
       tags:
-      - Merchants
-  /merchant/signup:
+      - Flows
     post:
       consumes:
       - application/json
-      description: Register a new merchant with an email, password, and name.
+      description: Create a new flow by providing flow details
       parameters:
-      - description: Signup request
+      - description: Flow Data
         in: body
-        name: signup
+        name: flow
         required: true
         schema:
-          $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SignupRequestDTO'
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.SuccessResponseDTO'
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO'
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_merchant_dto.ErrorResponseDTO'
-      summary: Register a new merchant
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Create a new flow
       tags:
-      - Merchants
-  /payments:
-    post:
-      consumes:
-      - application/json
-      description: Processes a payment based on the provided details
+      - Flows
+  /flows/{id}:
+    delete:
+      description: Remove a specific flow by its ID
       parameters:
-      - description: Payment Request
-        in: body
-        name: payment
+      - description: Flow ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentRequestDTO'
+        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO'
-        "400":
-          description: Invalid request payload
-          schema:
-            $ref: '#/definitions/gin.H'
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
         "500":
-          description: Unable to process payment
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
-      summary: Process a payment
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Delete a flow by ID
       tags:
-      - payments
-  /payments/{id}:
+      - Flows
     get:
-      consumes:
-      - application/json
-      description: Retrieves details of a payment by its ID
+      description: Retrieve details of a specific flow by ID
       parameters:
-      - description: Payment ID
+      - description: Flow ID
         in: path
         name: id
         required: true
@@ -249,53 +224,220 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentDetailsDTO'
-        "400":
-          description: Missing payment ID
-          schema:
-            $ref: '#/definitions/gin.H'
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
         "404":
-          description: Payment not found
+          description: Not Found
           schema:
-            $ref: '#/definitions/gin.H'
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
         "500":
-          description: Unable to retrieve payment details
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
-      summary: Get payment details
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Get flow details by ID
       tags:
-      - payments
-  /payments/refund:
-    post:
+      - Flows
+    put:
       consumes:
       - application/json
-      description: Handles the refund request by extracting refund details from the
-        request body and processing the refund.
+      description: Update an existing flow by providing its ID and updated details
       parameters:
-      - description: Refund details
+      - description: Flow ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Flow Data
         in: body
-        name: refundDTO
+        name: flow
         required: true
         schema:
-          $ref: '#/definitions/agnostic-payment-platform_internal_application_payment_dto.RefundDTO'
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
       produces:
       - application/json
       responses:
         "200":
-          description: Refund processed successfully
+          description: OK
           schema:
-            $ref: '#/definitions/agnostic-payment-platform_internal_application_payment_dto.PaymentResponseDTO'
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
         "400":
-          description: Invalid request payload
+          description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
         "500":
-          description: Unable to process payment
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
-      summary: Process a refund request
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Update a flow
       tags:
-      - payments
+      - Flows
+  /flows/{id}/execute:
+    post:
+      description: Execute a specific flow by its ID
+      parameters:
+      - description: Flow ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.FlowDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Execute a flow by ID
+      tags:
+      - Flows
+  /integrations:
+    get:
+      description: Get a list of all integrations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: List all integrations
+      tags:
+      - Integrations
+    post:
+      consumes:
+      - application/json
+      description: Create a new integration with the provided details
+      parameters:
+      - description: Integration data
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Create a new integration
+      tags:
+      - Integrations
+  /integrations/{id}:
+    delete:
+      description: Remove a specific integration by its ID
+      parameters:
+      - description: Integration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Delete an integration by ID
+      tags:
+      - Integrations
+    get:
+      description: Retrieve details of a specific integration by its ID
+      parameters:
+      - description: Integration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Get a specific integration by ID
+      tags:
+      - Integrations
+    put:
+      consumes:
+      - application/json
+      description: Update the details of an existing integration
+      parameters:
+      - description: Integration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated integration data
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_application_dto.IntegrationResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/generic-integration-platform_internal_infra_http_dto.ErrorResponseDTO'
+      summary: Update an existing integration by ID
+      tags:
+      - Integrations
 security:
 - ApiKeyAuth: []
 securityDefinitions:
