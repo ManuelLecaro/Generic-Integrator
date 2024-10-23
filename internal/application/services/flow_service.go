@@ -4,32 +4,40 @@ import (
 	"context"
 	"fmt"
 	"generic-integration-platform/internal/application/dto"
+	"generic-integration-platform/internal/domain/endpoint"
 	"generic-integration-platform/internal/domain/flow"
-	"generic-integration-platform/internal/domain/integration"
 	"generic-integration-platform/internal/infra/db"
 	"generic-integration-platform/internal/infra/eventstore"
+	"generic-integration-platform/internal/infra/executor"
 	"time"
 )
 
 // FlowService provides methods for managing flows.
 type FlowService struct {
-	Repository            db.FlowRepository
+	FlowRepository        db.FlowRepository
 	IntegrationRepository db.IntegrationRepository
 	EventStore            eventstore.FlowEventStore
+	Executor              map[string]executor.Executor
 }
 
 // NewFlowService creates a new instance of FlowService.
-func NewFlowService(repository db.FlowRepository, integrationRepo db.IntegrationRepository, es eventstore.FlowEventStore) *FlowService {
+func NewFlowService(
+	repository db.FlowRepository,
+	integrationRepo db.IntegrationRepository,
+	es eventstore.FlowEventStore,
+	executors map[string]executor.Executor,
+) *FlowService {
 	return &FlowService{
-		Repository:            repository,
+		FlowRepository:        repository,
 		IntegrationRepository: integrationRepo,
 		EventStore:            es,
+		Executor:              executors,
 	}
 }
 
 // ListFlows retrieves all flows.
 func (s *FlowService) ListFlows(ctx context.Context) ([]dto.FlowDTO, error) {
-	flows, err := s.Repository.GetAll(ctx)
+	flows, err := s.FlowRepository.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +56,7 @@ func (s *FlowService) CreateFlow(ctx context.Context, input dto.FlowDTO) (dto.Fl
 	newFlow := input.ToDomain()
 
 	// Save the new flow to the repository
-	if err := s.Repository.Create(ctx, newFlow); err != nil {
+	if err := s.FlowRepository.Create(ctx, newFlow); err != nil {
 		return dto.FlowDTO{}, err
 	}
 
@@ -63,7 +71,7 @@ func (s *FlowService) CreateFlow(ctx context.Context, input dto.FlowDTO) (dto.Fl
 
 // GetFlowByID retrieves a specific flow by its ID.
 func (s *FlowService) GetFlowByID(ctx context.Context, id string) (dto.FlowDTO, error) {
-	flow, err := s.Repository.GetByID(ctx, id)
+	flow, err := s.FlowRepository.GetByID(ctx, id)
 	if err != nil {
 		return dto.FlowDTO{}, err
 	}
@@ -74,7 +82,7 @@ func (s *FlowService) GetFlowByID(ctx context.Context, id string) (dto.FlowDTO, 
 // UpdateFlow updates an existing flow by its ID.
 func (s *FlowService) UpdateFlow(ctx context.Context, id string, input dto.FlowDTO) (dto.FlowDTO, error) {
 	// Retrieve the flow by ID
-	existingFlow, err := s.Repository.GetByID(ctx, id)
+	existingFlow, err := s.FlowRepository.GetByID(ctx, id)
 	if err != nil {
 		return dto.FlowDTO{}, err
 	}
@@ -84,7 +92,7 @@ func (s *FlowService) UpdateFlow(ctx context.Context, id string, input dto.FlowD
 	updatedFlow.ID = existingFlow.ID
 
 	// Save the updated flow to the repository
-	if err := s.Repository.Update(ctx, updatedFlow); err != nil {
+	if err := s.FlowRepository.Update(ctx, updatedFlow); err != nil {
 		return dto.FlowDTO{}, err
 	}
 
@@ -99,13 +107,13 @@ func (s *FlowService) UpdateFlow(ctx context.Context, id string, input dto.FlowD
 
 // DeleteFlow removes a flow by its ID.
 func (s *FlowService) DeleteFlow(ctx context.Context, id string) error {
-	flow, err := s.Repository.GetByID(ctx, id)
+	flow, err := s.FlowRepository.GetByID(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	// Delete the flow from the repository
-	if err := s.Repository.Delete(ctx, id); err != nil {
+	if err := s.FlowRepository.Delete(ctx, id); err != nil {
 		return err
 	}
 
@@ -120,7 +128,7 @@ func (s *FlowService) DeleteFlow(ctx context.Context, id string) error {
 // ExecuteFlow executes a specific flow by its ID.
 func (s *FlowService) ExecuteFlow(ctx context.Context, id string) (dto.FlowDTO, error) {
 	// Retrieve the flow by ID from the repository
-	flow, err := s.Repository.GetByID(ctx, id)
+	flow, err := s.FlowRepository.GetByID(ctx, id)
 	if err != nil {
 		return dto.FlowDTO{}, fmt.Errorf("failed to retrieve flow by ID: %w", err)
 	}
@@ -175,49 +183,37 @@ func (s *FlowService) ExecuteFlow(ctx context.Context, id string) (dto.FlowDTO, 
 	return dto.FromFlowDomain(flow), nil
 }
 
-// executeStep executes a specific step in a flow.
 func (s *FlowService) executeStep(ctx context.Context, step *flow.Step) (map[string]interface{}, error) {
-	// Retrieve the integration associated with the step
+	// Retrieve the integration by ID to get the corresponding details
 	integration, err := s.IntegrationRepository.GetByID(ctx, step.IntegrationID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve integration for step %s: %w", step.ID, err)
+		return nil, fmt.Errorf("failed to retrieve integration by ID: %w", err)
 	}
 
-	// Execute the action associated with the step using the integration and params
-	result, err := s.performAction(ctx, integration, step.Action, step.Params)
+	// Find the endpoint associated with the action in the integration
+	var endpoint *endpoint.Endpoint
+	for _, ep := range integration.Endpoints {
+		if ep.Action == step.Action {
+			endpoint = ep
+			break
+		}
+	}
+
+	if endpoint == nil {
+		return nil, fmt.Errorf("no endpoint found for action: %s", step.Action)
+	}
+
+	// Get the appropriate executor based on the integration type
+	executor, ok := s.Executor[integration.Type]
+	if !ok {
+		return nil, fmt.Errorf("no executor found for integration type: %s", integration.Type)
+	}
+
+	// Execute the step using the executor
+	response, err := executor.Execute(*integration, *endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute action for step %s: %w", step.ID, err)
+		return nil, fmt.Errorf("failed to execute step '%s': %w", step.Action, err)
 	}
 
-	// If the step is successfully executed, append the FlowStepCompleted event
-	completedEvent := eventstore.FlowStepCompletedEvent{
-		FlowID:     step.ID,
-		StepID:     step.ID,
-		StepName:   step.Name,
-		Params:     step.Params,
-		NextStepID: step.NextStepID,
-		Timestamp:  time.Now(),
-	}
-	if err := s.EventStore.AppendFlowStepCompletedEvent(ctx, completedEvent); err != nil {
-		return nil, fmt.Errorf("failed to append FlowStepCompletedEvent for step %s: %w", step.ID, err)
-	}
-
-	return result, nil
-}
-
-// performAction performs the action associated with a step using the provided integration.
-func (s *FlowService) performAction(ctx context.Context, integration *integration.Integration, action string, params map[string]interface{}) (map[string]interface{}, error) {
-	// The actual logic of how the integration performs the action depends on your business needs.
-	// This could involve making an API call, interacting with an external system, etc.
-	// For simplicity, we'll assume this is an HTTP call to the integration's API.
-
-	// Example: Make an HTTP request to the integration's base URL with the action and parameters
-	/*response, err := integration.ExecuteAction(ctx, action, params)
-	if err != nil {
-		return nil, err
-	}
-
-	// Process the response and return the result
-	return response, nil*/
-	return nil, nil
+	return response, nil
 }

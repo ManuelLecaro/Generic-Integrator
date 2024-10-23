@@ -3,9 +3,13 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"generic-integration-platform/internal/application/dto"
+	"generic-integration-platform/internal/domain/endpoint"
+	"generic-integration-platform/internal/domain/integration"
 	"generic-integration-platform/internal/infra/db"
 	"generic-integration-platform/internal/infra/eventstore"
+	"generic-integration-platform/internal/infra/executor"
 )
 
 var ErrIntegrationNotFound = errors.New("integration not found")
@@ -14,13 +18,15 @@ var ErrIntegrationNotFound = errors.New("integration not found")
 type IntegrationService struct {
 	Repository db.IntegrationRepository
 	EventStore eventstore.IntegrationEventStore
+	Executor   map[string]executor.Executor
 }
 
 // NewIntegrationService creates a new instance of IntegrationService.
-func NewIntegrationService(repository db.IntegrationRepository, store eventstore.IntegrationEventStore) *IntegrationService {
+func NewIntegrationService(repository db.IntegrationRepository, store eventstore.IntegrationEventStore, executors map[string]executor.Executor) *IntegrationService {
 	return &IntegrationService{
 		Repository: repository,
 		EventStore: store,
+		Executor:   executors,
 	}
 }
 
@@ -57,7 +63,6 @@ func (s *IntegrationService) CreateIntegration(ctx context.Context, input dto.In
 		Type:     newIntegration.Type,
 		BaseURL:  newIntegration.BaseURL,
 		AuthType: newIntegration.AuthType,
-		Currency: newIntegration.Currency,
 	}, nil
 }
 
@@ -74,7 +79,6 @@ func (s *IntegrationService) GetIntegrationByID(ctx context.Context, id string) 
 		Type:     integration.Type,
 		BaseURL:  integration.BaseURL,
 		AuthType: integration.AuthType,
-		Currency: integration.Currency,
 	}, nil
 }
 
@@ -96,11 +100,25 @@ func (s *IntegrationService) UpdateIntegration(ctx context.Context, id string, i
 		Type:     updatedIntegration.Type,
 		BaseURL:  updatedIntegration.BaseURL,
 		AuthType: updatedIntegration.AuthType,
-		Currency: updatedIntegration.Currency,
 	}, nil
 }
 
 // DeleteIntegration removes an integration by its ID.
 func (s *IntegrationService) DeleteIntegration(ctx context.Context, id string) error {
 	return s.Repository.Delete(ctx, id)
+}
+
+func (s *IntegrationService) RunIntegration(integration integration.Integration, endpoint endpoint.Endpoint) (map[string]interface{}, error) {
+	exec, ok := s.Executor[integration.Type]
+	if !ok {
+		return nil, fmt.Errorf("executor not found for type: %s", integration.Type)
+	}
+
+	// Execute the integration with the specific endpoint
+	response, err := exec.Execute(integration, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }

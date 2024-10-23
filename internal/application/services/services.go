@@ -3,6 +3,10 @@ package services
 import (
 	"context"
 	"generic-integration-platform/internal/application/dto"
+	"generic-integration-platform/internal/domain/endpoint"
+	"generic-integration-platform/internal/domain/integration"
+
+	"go.uber.org/fx"
 )
 
 type IFlowService interface {
@@ -40,4 +44,12 @@ type IIntegrationService interface {
 
 	// DeleteIntegration removes an integration by its ID.
 	DeleteIntegration(ctx context.Context, id string) error
+
+	// RunIntegration runs the integration.
+	RunIntegration(integration integration.Integration, endpoint endpoint.Endpoint) (map[string]interface{}, error)
 }
+
+var Module = fx.Provide(
+	NewFlowService,
+	NewIntegrationService,
+)

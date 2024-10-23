@@ -13,7 +13,6 @@ type Integration struct {
 	BaseURL   string               // The base URL for API requests
 	AuthType  string               // The type of authentication (e.g., Bearer, Basic)
 	AuthToken string               // The authentication token
-	Currency  string               // Currency for the transactions
 	Endpoints []*endpoint.Endpoint // List of endpoints associated with this integration
 }
 
@@ -25,7 +24,6 @@ func NewIntegration(name, integrationType, baseURL, authType, authToken, currenc
 		BaseURL:   baseURL,
 		AuthType:  authType,
 		AuthToken: authToken,
-		Currency:  currency,
 		Endpoints: endpoints,
 	}
 }
@@ -48,9 +46,6 @@ func (i *Integration) Validate() error {
 	}
 	if i.AuthType == "" {
 		return errors.New("auth type cannot be empty")
-	}
-	if i.Currency == "" {
-		return errors.New("currency cannot be empty")
 	}
 
 	return nil

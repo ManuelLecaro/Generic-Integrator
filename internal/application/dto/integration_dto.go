@@ -63,7 +63,6 @@ func (dto IntegrationRequestDTO) ToDomain() integration.Integration {
 		BaseURL:   dto.BaseURL,
 		AuthType:  dto.AuthType,
 		AuthToken: dto.AuthToken,
-		Currency:  dto.Currency,
 		Endpoints: endpoints,
 	}
 }
@@ -85,7 +84,6 @@ func ToResponseDTO(integration integration.Integration) IntegrationResponseDTO {
 		Type:      integration.Type,
 		BaseURL:   integration.BaseURL,
 		AuthType:  integration.AuthType,
-		Currency:  integration.Currency,
 		Endpoints: endpoints,
 	}
 }
@@ -160,7 +158,6 @@ func (dto IntegrationResponseDTO) ToDomain() integration.Integration {
 		Type:      dto.Type,
 		BaseURL:   dto.BaseURL,
 		AuthType:  dto.AuthType,
-		Currency:  dto.Currency,
 		Endpoints: endpoints,
 	}
 }
@@ -182,7 +179,6 @@ func FromDomain(integration integration.Integration) IntegrationResponseDTO {
 		Type:      integration.Type,
 		BaseURL:   integration.BaseURL,
 		AuthType:  integration.AuthType,
-		Currency:  integration.Currency,
 		Endpoints: endpoints,
 	}
 }

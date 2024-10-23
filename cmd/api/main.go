@@ -1,9 +1,11 @@
 package main
 
 import (
+	"generic-integration-platform/internal/application/services"
 	"generic-integration-platform/internal/infra/config"
 	"generic-integration-platform/internal/infra/db"
 	"generic-integration-platform/internal/infra/eventstore"
+	"generic-integration-platform/internal/infra/executor"
 	"generic-integration-platform/internal/infra/http"
 	"generic-integration-platform/internal/infra/http/routes"
 	"generic-integration-platform/internal/infra/monitoring"
@@ -41,15 +43,12 @@ func main() {
 		log.Fatal("Failed to load config")
 	}
 
-	iCfg, err := config.LoadIntegrationConfig("payments.toml")
-	if err != nil {
-		log.Fatal("Failed to load config")
-	}
-
 	fx.New(
-		fx.Provide(func() (*config.Config, *config.IntegrationConfig) {
-			return cfg, iCfg
+		fx.Provide(func() *config.Config {
+			return cfg
 		}),
+		executor.NewExecutorProvider(),
+		services.Module,
 		monitoring.Module,
 		http.Module,
 		routes.Module,

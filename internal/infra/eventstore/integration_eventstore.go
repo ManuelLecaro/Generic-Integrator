@@ -64,7 +64,6 @@ type IntegrationEvent struct {
 	BaseURL       string           `json:"base_url"`
 	AuthType      string           `json:"auth_type"`
 	AuthToken     string           `json:"auth_token"`
-	Currency      string           `json:"currency"`
 	Endpoints     []EndpointConfig `json:"endpoints"`
 	Timestamp     time.Time        `json:"timestamp"`
 }
@@ -96,7 +95,6 @@ func FromIntegration(integration *integration.Integration) IntegrationEvent {
 		BaseURL:       integration.BaseURL,
 		AuthType:      integration.AuthType,
 		AuthToken:     integration.AuthToken,
-		Currency:      integration.Currency,
 		Endpoints:     endpoints,
 		Timestamp:     time.Now(),
 	}
